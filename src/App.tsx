@@ -2016,7 +2016,6 @@ export default function App() {
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
                       <label className="block text-[9px] font-mono uppercase tracking-widest text-slate-500 font-bold">Operational Key / Pass:</label>
-                      <span className="text-[10px] font-mono text-slate-400">Default: 123</span>
                     </div>
                     <input
                       type="password"
@@ -2042,7 +2041,7 @@ export default function App() {
                 </form>
 
                 <div className="border-t border-slate-100 pt-4 flex flex-col gap-2 mt-2 font-sans text-xs">
-                  <p className="text-[10.5px] text-slate-500">Hint: Enter ID <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-850 font-bold">admin</span> and Pass <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-850 font-bold">123</span></p>
+
                   <button
                     onClick={() => setActiveRole("hub")}
                     className="w-full border border-slate-200 text-slate-450 hover:bg-slate-50 text-[11px] font-bold py-2 rounded-xl text-center cursor-pointer"
