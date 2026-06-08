@@ -205,6 +205,26 @@ export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sel
         }
       } else {
         // Create mode
+        let kitchenLat = null;
+        let kitchenLng = null;
+        try {
+          const coords = await new Promise<{lat: number; lng: number}>((resolve, reject) => {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                (err) => reject(err),
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+              );
+            } else {
+              reject(new Error("Geolocation not supported"));
+            }
+          });
+          kitchenLat = coords.lat;
+          kitchenLng = coords.lng;
+        } catch (err) {
+          console.warn("Could not capture kitchen geolocation", err);
+        }
+
         const deadline = new Date(Date.now() + Number(pickupHours) * 60 * 60 * 1000).toISOString();
         const res = await fetch("/api/rescue-food/listings/add", {
           method: "POST",
@@ -218,7 +238,9 @@ export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sel
             quantity,
             pickupDeadline: deadline,
             paymentId,
-            image: imageFile
+            image: imageFile,
+            lat: kitchenLat,
+            lng: kitchenLng
           })
         });
         if (res.ok) {

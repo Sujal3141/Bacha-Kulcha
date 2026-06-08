@@ -194,7 +194,7 @@ export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPor
 
   // Delivery configuration (strictly self-pickup by default)
   const [fulfillmentMethod, setFulfillmentMethod] = useState<"pickup" | "delivery">("pickup");
-  const [deliveryAddress, setDeliveryAddress] = useState("Flat 401, Saffron Meadows, Connaught Place, New Delhi");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
   const [paymentBroker, setPaymentBroker] = useState<"UPI" | "Stripe" | "Razorpay">("UPI");
 
   // Map server listings into beautiful editorial Restaurants
@@ -414,7 +414,7 @@ export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPor
             navigator.geolocation.getCurrentPosition(
               (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
               () => resolve({ lat: 28.6139 + (Math.random() - 0.5) * 0.03, lng: 77.2090 + (Math.random() - 0.5) * 0.03 }),
-              { timeout: 2500 }
+              { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
             );
           } else {
             resolve({ lat: 28.6139 + (Math.random() - 0.5) * 0.03, lng: 77.2090 + (Math.random() - 0.5) * 0.03 });
