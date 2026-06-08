@@ -412,10 +412,10 @@ export default function App() {
   const [listings, setListings] = useState<FoodListing[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [stats, setStats] = useState<SustainabilityStats>({
-    mealsSaved: 148,
-    co2Saved: 320.5,
-    waterSaved: 104000,
-    moneyRecovered: 14200
+    mealsSaved: 0,
+    co2Saved: 0,
+    waterSaved: 0,
+    moneyRecovered: 0
   });
 
   const [syncing, setSyncing] = useState(false);
@@ -445,10 +445,10 @@ export default function App() {
         const dataStats = await resStats.json();
         // Merge with luxury offset base
         setStats({
-          mealsSaved: Math.max(148, dataStats.mealsSaved),
-          co2Saved: Math.max(320.5, dataStats.co2Saved),
-          waterSaved: Math.max(104000, dataStats.waterSaved),
-          moneyRecovered: Math.max(14200, dataStats.moneyRecovered)
+          mealsSaved: dataStats.mealsSaved,
+          co2Saved: dataStats.co2Saved,
+          waterSaved: dataStats.waterSaved,
+          moneyRecovered: dataStats.moneyRecovered
         });
       }
 
@@ -1116,10 +1116,7 @@ export default function App() {
                 </div>
                 
                 <div className="flex items-center justify-between pt-5 border-t border-slate-100 mt-3 relative z-10" style={{ transform: "translateZ(20px)" }}>
-                  <span className="text-[10.5px] font-mono font-medium text-slate-455 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    SSL Secured
-                  </span>
+                  <span></span>
                   <MagneticButton 
                     id="btn-customer-portal"
                     className="inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-full bg-[#e23744] hover:bg-[#cb202d] text-white text-[11px] font-extrabold font-sans transition-all duration-300 shadow-md shadow-[#e23744]/25"
@@ -1211,10 +1208,7 @@ export default function App() {
                 </div>
 
                 <div className="flex items-center justify-between pt-5 border-t border-slate-100 mt-3 relative z-10" style={{ transform: "translateZ(20px)" }}>
-                  <span className="text-[10.5px] font-mono font-medium text-slate-455 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    SYNC PORT ACTIVE
-                  </span>
+                  <span></span>
                   <MagneticButton 
                     id="btn-seller-portal"
                     className="inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-full bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-extrabold font-sans transition-all duration-300 shadow-md shadow-sky-600/25"
@@ -1300,10 +1294,7 @@ export default function App() {
                 </div>
 
                 <div className="flex items-center justify-between pt-5 border-t border-slate-100 mt-3 relative z-10" style={{ transform: "translateZ(20px)" }}>
-                  <span className="text-[10.5px] font-mono font-medium text-slate-455 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    ID CHECK REQUIRED
-                  </span>
+                  <span></span>
                   <MagneticButton 
                     id="btn-admin-portal"
                     className="inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-full bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-extrabold font-sans transition-all duration-300 shadow-md shadow-slate-800/25"
@@ -2871,11 +2862,6 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p>© 2026 bacha kulcha inc. All gourmet leftovers represent certified safety protocols.</p>
           <div className="flex gap-4 uppercase">
-            <span>256bit SSL Encryption</span>
-            <span>•</span>
-            <span>Mongoose atlas db</span>
-            <span>•</span>
-            <span>Notion Meets Zomato</span>
           </div>
         </div>
       </footer>
