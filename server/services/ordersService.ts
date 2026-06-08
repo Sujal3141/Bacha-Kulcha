@@ -22,6 +22,16 @@ router.get("/", async (req, res) => {
   }
 });
 
+// 1.5. Get reports list
+router.get("/reports", async (req, res) => {
+  try {
+    const list = await DbService.getReports();
+    res.json(list);
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to read reports", details: err.message });
+  }
+});
+
 // 2. Reserve listing / Create Order
 router.post("/", async (req, res) => {
   const { 
@@ -73,7 +83,7 @@ router.post("/", async (req, res) => {
       quantity,
       pickupDeadline: listing.pickupDeadline,
       status: "Reserved",
-      qrCodeValue: `RESCUE-${orderId}-${listing.id}`,
+      otp: Math.floor(1000 + Math.random() * 9000).toString(),
       timestamp: new Date().toISOString(),
       paymentMethod: paymentMethod || "UPI",
       fulfillmentMethod: fulfillmentMethod || "pickup",
@@ -153,6 +163,54 @@ router.post("/complete", async (req, res) => {
     res.json({ success: true, order: updatedOrder });
   } catch (err: any) {
     res.status(500).json({ error: "Complete pickup failed", details: err.message });
+  }
+});
+
+// 4. Verify OTP
+router.post("/:id/verify-otp", async (req, res) => {
+  const { otp } = req.body;
+  try {
+    const orders = await DbService.getOrders();
+    const order = orders.find(o => o.id === req.params.id);
+    if (!order) return res.status(404).json({ error: "Order not found" });
+    if (order.otp !== otp) return res.status(400).json({ error: "Invalid OTP" });
+    const completed = await DbService.completeOrder(order.id);
+    res.json({ success: true, order: completed });
+  } catch (err: any) {
+    res.status(500).json({ error: "Verification failed", details: err.message });
+  }
+});
+
+// 5. Submit Feedback
+router.post("/:id/feedback", async (req, res) => {
+  const { rating, text, images } = req.body;
+  try {
+    const updated = await DbService.updateOrderFeedback(req.params.id, {
+      feedbackRating: Number(rating),
+      feedbackText: text,
+      feedbackImages: images || []
+    });
+    res.json({ success: true, order: updated });
+  } catch (err: any) {
+    res.status(500).json({ error: "Feedback failed", details: err.message });
+  }
+});
+
+// 6. Submit Report
+router.post("/:id/report", async (req, res) => {
+  const { issues, message, restaurantName } = req.body;
+  try {
+    const report = await DbService.createReport({
+      id: "rep-" + Date.now(),
+      orderId: req.params.id,
+      restaurantName,
+      issues: issues || [],
+      message,
+      timestamp: new Date().toISOString()
+    });
+    res.json({ success: true, report });
+  } catch (err: any) {
+    res.status(500).json({ error: "Report failed", details: err.message });
   }
 });
 

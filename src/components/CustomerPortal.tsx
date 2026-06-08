@@ -178,7 +178,7 @@ function Directions({ origin, destination }: DirectionsProps) {
 
 export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPortalProps) {
   // Screens state: "home" | "restaurant" | "receipt"
-  const [currentScreen, setCurrentScreen] = useState<"home" | "restaurant" | "receipt" | "how-it-works">("home");
+  const [currentScreen, setCurrentScreen] = useState<"home" | "restaurant" | "receipt" | "how-it-works" | "past-orders">("home");
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>("rest-heritage");
   
   // Search & Filter state
@@ -191,6 +191,15 @@ export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPor
   const [likedRestaurants, setLikedRestaurants] = useState<string[]>([]);
   const [checkoutPending, setCheckoutPending] = useState(false);
   const [latestCompletedOrder, setLatestCompletedOrder] = useState<Order | null>(null);
+
+  // Modals state
+  const [feedbackModal, setFeedbackModal] = useState<{ isOpen: boolean; orderId: string | null }>({ isOpen: false, orderId: null });
+  const [feedbackRating, setFeedbackRating] = useState(5);
+  const [feedbackText, setFeedbackText] = useState("");
+  
+  const [reportModal, setReportModal] = useState<{ isOpen: boolean; orderId: string | null; restaurantName: string }>({ isOpen: false, orderId: null, restaurantName: "" });
+  const [reportIssues, setReportIssues] = useState<string[]>([]);
+  const [reportMessage, setReportMessage] = useState("");
 
   // Delivery configuration (strictly self-pickup by default)
   const [fulfillmentMethod, setFulfillmentMethod] = useState<"pickup" | "delivery">("pickup");
@@ -469,7 +478,7 @@ export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPor
           quantity: firstEntry.quantity,
           pickupDeadline: serverOrder.pickupDeadline || new Date(Date.now() + 2 * 3600 * 1000).toISOString(),
           status: "Reserved",
-          qrCodeValue: serverOrder.qrCodeValue || `VERIFIED_B_KULCHA_${txnRef}`,
+          otp: serverOrder.otp || Math.floor(1000 + Math.random() * 9000).toString(),
           timestamp: serverOrder.timestamp || new Date().toISOString(),
           paymentMethod: paymentBroker,
           fulfillmentMethod: "pickup",
@@ -568,6 +577,21 @@ export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPor
                   {cartStatistics.itemsCount}
                 </span>
               )}
+            </button>
+
+            <button
+              onClick={() => {
+                setCurrentScreen("past-orders");
+                setIsCartOpen(false);
+              }}
+              className={`px-4 py-1.5 rounded-lg text-xs font-sans font-medium transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                currentScreen === "past-orders" && !isCartOpen
+                  ? "bg-white text-slate-900 font-extrabold shadow-sm"
+                  : "text-slate-650 hover:text-slate-900"
+              }`}
+            >
+              <Compass size={13} />
+              <span>Past Orders</span>
             </button>
           </div>
         </div>
@@ -1164,23 +1188,13 @@ export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPor
                     </div>
                   </div>
 
-                  {/* Ticket QR Stub */}
+                  {/* Ticket OTP Stub */}
                   <div className="bg-[#FAFAFA] p-5 border-t border-dashed border-slate-200 flex flex-col items-center justify-center space-y-3">
                     <div className="p-3 bg-white rounded-xl shadow-xs border border-slate-100 flex items-center justify-center">
-                      {/* Generates standard verification QR template structure */}
-                      <svg width="100" height="100" viewBox="0 0 100 100" className="opacity-90">
-                        {/* Outlines of QR code */}
-                        <path d="M0 0h30v30H0V0zm10 10v10h10V10H10zM70 0h30v30H70V0zm10 10v10h10V10H10zM0 70h30v30H0V70zm10 10v10h10V10H10z" fill="#0A0A0A" />
-                        <rect x="40" y="4" width="8" height="8" fill="#e23744" />
-                        <rect x="52" y="16" width="12" height="12" fill="#0A0A0A" />
-                        <rect x="80" y="80" width="12" height="12" fill="#e23744" />
-                        <rect x="44" y="44" width="20" height="20" fill="#0A0A0A" />
-                        <rect x="20" y="45" width="12" height="6" fill="#0A0A0A" />
-                        <path d="M70 50h10v10H70V50zm10 10h10v10H80V60z" fill="#0A0A0A" />
-                      </svg>
+                      <span className="text-3xl font-mono font-black text-[#e23744] tracking-widest">{latestCompletedOrder.otp || "WAIT"}</span>
                     </div>
-                    <span className="text-[8px] font-mono tracking-widest text-slate-400 uppercase text-center">
-                      Scan ticket at counter
+                    <span className="text-[9px] font-sans font-bold tracking-widest text-slate-500 uppercase text-center">
+                      Share OTP with Kitchen
                     </span>
                   </div>
                 </div>
@@ -1264,6 +1278,81 @@ export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPor
                     Go back to Discover Feed
                   </button>
                 </div>
+              </motion.div>
+            )}
+
+            {/* SCREEN 4: PAST ORDERS */}
+            {currentScreen === "past-orders" && (
+              <motion.div
+                key="past-orders-screen"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25 }}
+                className="p-5 max-w-2xl mx-auto w-full space-y-6 pb-20"
+              >
+                <h3 className="font-sans font-black text-2xl text-slate-900 tracking-tight">Your Order History</h3>
+                
+                {orders.length === 0 ? (
+                  <div className="py-16 text-center space-y-3 bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+                    <p className="text-2xl">📦</p>
+                    <h4 className="font-sans text-sm font-semibold text-slate-800">No past orders yet</h4>
+                    <p className="text-[10px] text-slate-400 max-w-xs mx-auto">
+                      Your rescue history will appear here once you make your first order.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {[...orders].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map(order => (
+                      <div key={order.id} className="bg-white rounded-[20px] p-5 border border-slate-200/60 shadow-sm space-y-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="text-[10px] bg-slate-100 text-slate-500 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wide">
+                              {order.status}
+                            </span>
+                            <h4 className="font-bold text-lg text-slate-800 mt-1">{order.restaurantName}</h4>
+                            <p className="text-xs text-slate-500">{order.quantity}x {order.foodName}</p>
+                            <p className="text-[10px] text-slate-400 font-mono mt-1">OTP: {order.otp}</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-mono text-sm font-black text-[#e23744]">₹{order.totalPaid}</span>
+                            <p className="text-[10px] text-slate-400 mt-1">{new Date(order.timestamp).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="pt-3 border-t border-slate-100 flex gap-2">
+                          {!order.feedbackRating && order.status === "Delivered" && (
+                            <button 
+                              onClick={() => setFeedbackModal({ isOpen: true, orderId: order.id })}
+                              className="text-[11px] font-bold bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg hover:bg-amber-200 transition-colors cursor-pointer"
+                            >
+                              ⭐ Leave Rating
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => setReportModal({ isOpen: true, orderId: order.id, restaurantName: order.restaurantName })}
+                            className="text-[11px] font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors ml-auto cursor-pointer"
+                          >
+                            🚩 Report Issue
+                          </button>
+                        </div>
+
+                        {/* Display feedback if submitted */}
+                        {order.feedbackRating && (
+                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 mt-2">
+                            <div className="flex gap-1 mb-1">
+                              {[1,2,3,4,5].map(star => (
+                                <Star key={star} size={12} className={star <= order.feedbackRating! ? "text-amber-500 fill-amber-500" : "text-slate-300"} />
+                              ))}
+                            </div>
+                            {order.feedbackText && <p className="text-xs text-slate-600 italic">"{order.feedbackText}"</p>}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -1435,6 +1524,108 @@ export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPor
         </AnimatePresence>
 
       </div>
+
+      {/* FEEDBACK MODAL */}
+      <AnimatePresence>
+        {feedbackModal.isOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-200"
+            >
+              <h3 className="font-bold text-lg mb-4 text-slate-800">Leave Feedback</h3>
+              <div className="flex gap-2 mb-4 justify-center">
+                {[1,2,3,4,5].map(star => (
+                  <button key={star} onClick={() => setFeedbackRating(star)} className="cursor-pointer">
+                    <Star size={32} className={star <= feedbackRating ? "text-amber-500 fill-amber-500" : "text-slate-200"} />
+                  </button>
+                ))}
+              </div>
+              <textarea 
+                value={feedbackText} onChange={e => setFeedbackText(e.target.value)}
+                placeholder="Share your experience (optional)..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm min-h-[100px] mb-4"
+              />
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => setFeedbackModal({ isOpen: false, orderId: null })} className="px-4 py-2 text-sm font-bold text-slate-500 cursor-pointer">Cancel</button>
+                <button 
+                  onClick={async () => {
+                    await fetch(`/api/rescue-food/orders/${feedbackModal.orderId}/feedback`, {
+                      method: "POST", headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ rating: feedbackRating, text: feedbackText, images: [] })
+                    });
+                    setFeedbackModal({ isOpen: false, orderId: null });
+                    window.location.reload();
+                  }}
+                  className="px-4 py-2 bg-[#e23744] text-white rounded-xl text-sm font-bold shadow hover:bg-red-700 cursor-pointer"
+                >
+                  Submit
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* REPORT MODAL */}
+      <AnimatePresence>
+        {reportModal.isOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-200"
+            >
+              <h3 className="font-bold text-lg mb-4 text-slate-800">Report an Issue</h3>
+              <p className="text-xs text-slate-500 mb-4">Select all that apply for {reportModal.restaurantName}:</p>
+              <div className="space-y-2 mb-4">
+                {["Food was spoiled/unsafe", "Quantity mismatched", "Kitchen closed", "Wrong item", "Other"].map(issue => (
+                  <label key={issue} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-slate-300 text-[#e23744] focus:ring-[#e23744]"
+                      checked={reportIssues.includes(issue)}
+                      onChange={(e) => {
+                        if (e.target.checked) setReportIssues([...reportIssues, issue]);
+                        else setReportIssues(reportIssues.filter(i => i !== issue));
+                      }}
+                    />
+                    {issue}
+                  </label>
+                ))}
+              </div>
+              <textarea 
+                value={reportMessage} onChange={e => setReportMessage(e.target.value)}
+                placeholder="Additional details..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm min-h-[80px] mb-4"
+              />
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => setReportModal({ isOpen: false, orderId: null, restaurantName: "" })} className="px-4 py-2 text-sm font-bold text-slate-500 cursor-pointer">Cancel</button>
+                <button 
+                  onClick={async () => {
+                    await fetch(`/api/rescue-food/orders/${reportModal.orderId}/report`, {
+                      method: "POST", headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ issues: reportIssues, message: reportMessage, restaurantName: reportModal.restaurantName })
+                    });
+                    setReportModal({ isOpen: false, orderId: null, restaurantName: "" });
+                    alert("Report submitted to Admin.");
+                  }}
+                  disabled={reportIssues.length === 0 && reportMessage.trim() === ""}
+                  className="px-4 py-2 bg-slate-800 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow hover:bg-black cursor-pointer"
+                >
+                  Send to Admin
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

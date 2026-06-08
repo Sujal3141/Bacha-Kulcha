@@ -1976,6 +1976,7 @@ export default function App() {
                 <SellerPortal 
                   onListingAdded={syncServerState} 
                   listings={listings}
+                  orders={orders}
                   onTriggerAutoPrice={handleTriggerAutoPrice}
                   sellerRestaurantName={kitchenReg.name}
                 />

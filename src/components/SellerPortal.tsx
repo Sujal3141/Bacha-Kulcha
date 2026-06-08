@@ -9,7 +9,12 @@ interface SellerPortalProps {
   sellerRestaurantName?: string;
 }
 
-export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sellerRestaurantName }: SellerPortalProps) {
+export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sellerRestaurantName, orders = [] }: SellerPortalProps & { orders?: import('../types').Order[] }) {
+  // Tabs
+  const [activeTab, setActiveTab] = useState<"inventory" | "orders">("inventory");
+  
+  // Active Orders state
+  const [otpInputs, setOtpInputs] = useState<Record<string, string>>({});
   // New listing state
   const [name, setName] = useState("");
   const [category, setCategory] = useState("cooked");
@@ -131,6 +136,29 @@ export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sel
     originalPrice ? Number(originalPrice) : 300,
     hoursToExpirySlider
   );
+
+  const handleVerifyOtp = async (orderId: string) => {
+    const otp = otpInputs[orderId];
+    if (!otp) return;
+    try {
+      const res = await fetch(`/api/rescue-food/orders/${orderId}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otp })
+      });
+      if (res.ok) {
+        alert("OTP Verified! Order marked as Delivered.");
+        setOtpInputs({ ...otpInputs, [orderId]: "" });
+        onListingAdded();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Invalid OTP");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to verify OTP.");
+    }
+  };
 
   // Run AI analysis with Gemini
   const handleAiAnalysis = async () => {
@@ -264,9 +292,28 @@ export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sel
   };
 
   const sellerSpecificListings = listings.filter(l => l.restaurantName === restaurantName);
+  const sellerOrders = orders.filter(o => o.restaurantName === restaurantName && o.status !== "Cancelled");
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div className="flex flex-col gap-6">
+      {/* Top Tabs */}
+      <div className="flex gap-4 border-b border-slate-200">
+        <button 
+          onClick={() => setActiveTab("inventory")}
+          className={`pb-2 px-4 font-bold ${activeTab === "inventory" ? "border-b-2 border-[#e23744] text-[#e23744]" : "text-slate-500 hover:text-slate-700"}`}
+        >
+          Inventory Management
+        </button>
+        <button 
+          onClick={() => setActiveTab("orders")}
+          className={`pb-2 px-4 font-bold ${activeTab === "orders" ? "border-b-2 border-[#e23744] text-[#e23744]" : "text-slate-500 hover:text-slate-700"}`}
+        >
+          Active Orders & OTP Verify
+        </button>
+      </div>
+
+      {activeTab === "inventory" ? (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
       {/* Upload Surplus Meal Form - 7 cols */}
       <div className="lg:col-span-7 flex flex-col gap-6">
@@ -686,7 +733,51 @@ export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sel
             </div>
           )}
         </div>
-      </div>
+        </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <h2 className="font-bold text-xl text-slate-800">Active Orders</h2>
+          {sellerOrders.length === 0 ? (
+            <p className="text-slate-500">No active orders yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {sellerOrders.map(order => (
+                <div key={order.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-bold text-slate-800 text-lg">{order.foodName}</h3>
+                      <p className="text-sm text-slate-500">Qty: {order.quantity} | Total: ₹{order.totalPaid}</p>
+                    </div>
+                    <span className={`px-2 py-1 text-[10px] uppercase font-bold rounded ${order.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  
+                  {order.status !== "Delivered" && (
+                    <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-2">
+                      <input 
+                        type="text" 
+                        maxLength={4}
+                        placeholder="Enter 4-digit OTP" 
+                        value={otpInputs[order.id] || ""}
+                        onChange={(e) => setOtpInputs({ ...otpInputs, [order.id]: e.target.value })}
+                        className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-[#e23744] flex-1"
+                      />
+                      <button 
+                        onClick={() => handleVerifyOtp(order.id)}
+                        className="bg-[#e23744] hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm shrink-0 cursor-pointer"
+                      >
+                        Verify OTP
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

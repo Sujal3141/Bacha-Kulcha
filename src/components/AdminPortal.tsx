@@ -45,10 +45,16 @@ export function AdminPortal({ listings, notifications, onTriggerAutoPrice, order
     { name: "Downtown Banquet Center", type: "Exhibition Hall", count: 0, status: "Awaiting Audit", riskScore: "Medium" }
   ]);
 
-  const [fraudAlerts, setFraudAlerts] = useState([
-    { id: "frd-1", restaurant: "Downtown Banquet Center", issue: "Irregular pricing model (₹600 set as ₹590 rescue)", severity: "Medium", status: "Open" },
-    { id: "frd-2", restaurant: "StreetFood Hub", issue: "Expired listing remaining online after deadline", severity: "Low", status: "Resolved" }
-  ]);
+  const [reports, setReports] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/rescue-food/reports')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setReports(data);
+      })
+      .catch(err => console.error("Failed to fetch reports:", err));
+  }, []);
 
   const approvePartner = (partnerName: string) => {
     setPartnerStatus(prev => prev.map(p => {
@@ -59,8 +65,9 @@ export function AdminPortal({ listings, notifications, onTriggerAutoPrice, order
     }));
   };
 
-  const resolveAlert = (id: string) => {
-    setFraudAlerts(prev => prev.map(a => {
+  const resolveAlert = async (id: string) => {
+    // Optimistic UI update, usually this would call a PUT endpoint
+    setReports(prev => prev.map(a => {
       if (a.id === id) {
         return { ...a, status: "Resolved" };
       }
@@ -81,6 +88,11 @@ export function AdminPortal({ listings, notifications, onTriggerAutoPrice, order
     ? `₹${(platformFee / 1000).toFixed(1)}K` 
     : `₹${platformFee.toFixed(0)}`;
 
+  const ordersWithRating = orders.filter(o => o.feedbackRating);
+  const avgRating = ordersWithRating.length 
+    ? (ordersWithRating.reduce((sum, o) => sum + o.feedbackRating, 0) / ordersWithRating.length).toFixed(1)
+    : "N/A";
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
@@ -97,10 +109,10 @@ export function AdminPortal({ listings, notifications, onTriggerAutoPrice, order
             </div>
           </div>
           <div className="bg-white border border-gray-100 p-5 rounded-2xl flex flex-col justify-between">
-            <span className="text-[10px] uppercase font-bold text-gray-400 font-sans tracking-wide">Avg Savings / Portion</span>
+            <span className="text-[10px] uppercase font-bold text-gray-400 font-sans tracking-wide">Customer Satisfaction</span>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-mono font-extrabold text-slate-900">₹{avgSavingsValue}</span>
-              <span className="text-xs font-sans text-emerald-600 font-semibold">82% Drop</span>
+              <span className="text-2xl font-mono font-extrabold text-slate-900">{avgRating}</span>
+              <span className="text-xs font-sans text-amber-500 font-semibold flex items-center">⭐ Avg Rating</span>
             </div>
           </div>
           <div className="bg-white border border-gray-100 p-5 rounded-2xl flex flex-col justify-between">
@@ -615,33 +627,36 @@ export function AdminPortal({ listings, notifications, onTriggerAutoPrice, order
         <div className="bg-rose-50 border border-rose-100 rounded-2xl p-5 shadow-sm">
           <h3 className="font-sans font-extrabold text-sm text-rose-950 flex items-center gap-1.5 mb-4">
             <AlertCircle size={18} className="text-rose-600" />
-            Integrity &amp; Anti-Fraud Log
+            Customer Reports & Issues
           </h3>
 
           <div className="space-y-4">
-            {fraudAlerts.map(alert => (
-              <div key={alert.id} className="p-3.5 bg-white border border-rose-200/60 rounded-xl space-y-2">
+            {reports.length === 0 ? <p className="text-xs text-rose-800">No issues reported.</p> : reports.map(report => (
+              <div key={report.id} className="p-3.5 bg-white border border-rose-200/60 rounded-xl space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] font-mono text-rose-700 font-extrabold uppercase bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-                    Alert {alert.id}
+                    Order #{report.orderId?.slice(-6)}
                   </span>
                   
                   <span className={`text-[9px] font-sans font-bold px-1.5 py-0.5 rounded-full ${
-                    alert.status === "Resolved" 
+                    report.status === "Resolved" 
                       ? "bg-slate-100 text-slate-500" 
                       : "bg-amber-100 text-amber-800"
                   }`}>
-                    {alert.status}
+                    {report.status || "Open"}
                   </span>
                 </div>
 
-                <p className="text-xs font-bold font-sans text-gray-900 leading-snug">{alert.restaurant}</p>
-                <p className="text-[11px] font-sans text-gray-500 leading-normal">{alert.issue}</p>
+                <p className="text-xs font-bold font-sans text-gray-900 leading-snug">{report.restaurantName}</p>
+                <p className="text-[11px] font-sans text-rose-600 leading-normal font-bold">
+                  {(report.issues || []).join(", ")}
+                </p>
+                {report.message && <p className="text-[11px] font-sans text-gray-500 leading-normal italic">"{report.message}"</p>}
 
-                {alert.status === "Open" && (
+                {report.status !== "Resolved" && (
                   <button
-                    onClick={() => resolveAlert(alert.id)}
-                    className="mt-2 text-[10px] font-sans font-bold text-rose-600 hover:underline flex items-center gap-1"
+                    onClick={() => resolveAlert(report.id)}
+                    className="mt-2 text-[10px] font-sans font-bold text-rose-600 hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     Flag as Audited / Resolve
                   </button>

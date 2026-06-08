@@ -29,8 +29,8 @@ export interface Order {
   price: number;
   quantity: number;
   pickupDeadline: string;
-  status: "Reserved" | "Picked Up" | "Cancelled";
-  qrCodeValue: string;
+  status: "Reserved" | "Picked Up" | "Cancelled" | "Delivered";
+  otp: string;
   timestamp: string;
   paymentMethod: "Stripe" | "Razorpay" | "UPI";
   fulfillmentMethod?: "pickup" | "delivery";
@@ -47,6 +47,18 @@ export interface Order {
   kitchenLat?: number;
   kitchenLng?: number;
   kitchenPhone?: string;
+  feedbackRating?: number;
+  feedbackText?: string;
+  feedbackImages?: string[];
+}
+
+export interface Report {
+  id: string;
+  orderId: string;
+  restaurantName: string;
+  issues: string[];
+  message: string;
+  timestamp: string;
 }
 
 export interface SystemNotification {

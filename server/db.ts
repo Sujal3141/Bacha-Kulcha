@@ -35,8 +35,8 @@ export interface IOrder {
   price: number;
   quantity: number;
   pickupDeadline: string;
-  status: "Reserved" | "Picked Up";
-  qrCodeValue: string;
+  status: "Reserved" | "Picked Up" | "Delivered";
+  otp: string;
   timestamp: string;
   paymentMethod: string;
   fulfillmentMethod: string;
@@ -53,6 +53,18 @@ export interface IOrder {
   kitchenLat?: number;
   kitchenLng?: number;
   kitchenPhone?: string;
+  feedbackRating?: number;
+  feedbackText?: string;
+  feedbackImages?: string[];
+}
+
+export interface IReport {
+  id: string;
+  orderId: string;
+  restaurantName: string;
+  issues: string[];
+  message: string;
+  timestamp: string;
 }
 
 export interface INotification {
@@ -92,6 +104,7 @@ export interface IKitchen {
 // Global In-Memory Fallback Store (replaces server local variables)
 let inMemoryListings: IFoodListing[] = [];
 let inMemoryOrders: IOrder[] = [];
+let inMemoryReports: IReport[] = [];
 let inMemoryNotifications: INotification[] = [
   {
     id: "notif-welcome",
@@ -187,6 +200,7 @@ function saveLocalFallback() {
     const data = {
       listings: inMemoryListings,
       orders: inMemoryOrders,
+      reports: inMemoryReports,
       notifications: inMemoryNotifications,
       stats: inMemoryStats,
       kitchens: inMemoryKitchens
@@ -206,6 +220,7 @@ function loadLocalFallback() {
         const data = JSON.parse(fileContent);
         if (data.listings) inMemoryListings = data.listings;
         if (data.orders) inMemoryOrders = data.orders;
+        if (data.reports) inMemoryReports = data.reports;
         if (data.notifications) inMemoryNotifications = data.notifications;
         if (data.stats) inMemoryStats = data.stats;
         if (data.kitchens) {
@@ -342,8 +357,8 @@ const OrderSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   quantity: { type: Number, required: true },
   pickupDeadline: { type: String, required: true },
-  status: { type: String, enum: ["Reserved", "Picked Up"], required: true },
-  qrCodeValue: { type: String, required: true },
+  status: { type: String, enum: ["Reserved", "Picked Up", "Delivered"], required: true },
+  otp: { type: String, required: true },
   timestamp: { type: String, required: true },
   paymentMethod: { type: String, required: true },
   fulfillmentMethod: { type: String, required: true },
@@ -359,7 +374,19 @@ const OrderSchema = new mongoose.Schema({
   customerLng: { type: Number },
   kitchenLat: { type: Number },
   kitchenLng: { type: Number },
-  kitchenPhone: { type: String }
+  kitchenPhone: { type: String },
+  feedbackRating: { type: Number },
+  feedbackText: { type: String },
+  feedbackImages: { type: [String] }
+}, { timestamps: true });
+
+const ReportSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  orderId: { type: String, required: true },
+  restaurantName: { type: String, required: true },
+  issues: { type: [String], required: true },
+  message: { type: String, required: true },
+  timestamp: { type: String, required: true }
 }, { timestamps: true });
 
 const NotificationSchema = new mongoose.Schema({
@@ -401,6 +428,7 @@ const OrderModel = mongoose.models.Order || mongoose.model("Order", OrderSchema)
 const NotificationModel = mongoose.models.Notification || mongoose.model("Notification", NotificationSchema);
 const StatsModel = mongoose.models.Stats || mongoose.model("Stats", StatsSchema);
 const KitchenModel = mongoose.models.Kitchen || mongoose.model("Kitchen", KitchenSchema);
+const ReportModel = mongoose.models.Report || mongoose.model("Report", ReportSchema);
 
 // Connection Status API payload details
 export function getDbStatus() {
@@ -561,24 +589,87 @@ export const DbService = {
 
   completeOrder: async (orderId: string): Promise<IOrder | null> => {
     try {
-      await FirestoreDb.update<IOrder>("orders", orderId, { status: "Picked Up" });
+      await FirestoreDb.update<IOrder>("orders", orderId, { status: "Delivered" });
     } catch (err) {
       console.warn("⚠️ Firebase completeOrder offline/skipped:", err);
     }
     if (isConnectedToMongo) {
       try {
-        await (OrderModel as any).findOneAndUpdate({ id: orderId }, { $set: { status: "Picked Up" } });
+        await (OrderModel as any).findOneAndUpdate({ id: orderId }, { $set: { status: "Delivered" } });
       } catch (err) {
         console.error("MongoDB update order fail:", err);
       }
     }
     const order = inMemoryOrders.find(o => o.id === orderId);
     if (order) {
-      order.status = "Picked Up";
+      order.status = "Delivered";
       saveLocalFallback();
       return order;
     }
     return null;
+  },
+
+  updateOrderFeedback: async (orderId: string, updates: Partial<IOrder>): Promise<IOrder | null> => {
+    try {
+      await FirestoreDb.update<IOrder>("orders", orderId, updates);
+    } catch (err) {
+      console.warn("⚠️ Firebase updateOrderFeedback offline/skipped:", err);
+    }
+    if (isConnectedToMongo) {
+      try {
+        await (OrderModel as any).findOneAndUpdate({ id: orderId }, { $set: updates });
+      } catch (err) {
+        console.error("MongoDB update order feedback fail:", err);
+      }
+    }
+    const order = inMemoryOrders.find(o => o.id === orderId);
+    if (order) {
+      Object.assign(order, updates);
+      saveLocalFallback();
+      return order;
+    }
+    return null;
+  },
+
+  // ---- Reports API ----
+  getReports: async (): Promise<IReport[]> => {
+    try {
+      const list = await FirestoreDb.list<IReport>("reports");
+      if (list && list.length > 0) {
+        inMemoryReports = list;
+        return list;
+      }
+    } catch (err) {
+      console.warn("⚠️ Firebase getReports offline/skipped:", err);
+    }
+    if (isConnectedToMongo) {
+      try {
+        const raw = await (ReportModel as any).find({}).sort({ createdAt: -1 });
+        return raw.map((r: any) => r.toObject());
+      } catch (err) {
+        console.error("MongoDB read reports fail, fall back:", err);
+      }
+    }
+    return inMemoryReports;
+  },
+
+  createReport: async (report: IReport): Promise<IReport> => {
+    try {
+      await FirestoreDb.set<IReport>("reports", report.id, report);
+    } catch (err) {
+      console.warn("⚠️ Firebase createReport offline/skipped:", err);
+    }
+    if (isConnectedToMongo) {
+      try {
+        const doc = new (ReportModel as any)(report);
+        await doc.save();
+      } catch (err) {
+        console.error("MongoDB create report fail:", err);
+      }
+    }
+    inMemoryReports.unshift(report);
+    saveLocalFallback();
+    return report;
   },
 
   // ---- Notifications API ----
