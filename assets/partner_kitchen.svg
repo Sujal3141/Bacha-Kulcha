@@ -1,0 +1,154 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Premium Shadows and Lighting Filters -->
+    <filter id="kitchen-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="24" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="tablet-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#0284c7" flood-opacity="0.12" />
+    </filter>
+    <filter id="icon-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0369a1" flood-opacity="0.15" />
+    </filter>
+
+    <!-- Rich Cool Blue & Teal Gradients -->
+    <radialGradient id="portal-blue-glow" cx="50%" cy="50%" r="45%">
+      <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.95" />
+      <stop offset="60%" stop-color="#ccfbf1" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="tablet-body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+
+    <linearGradient id="tablet-screen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0fdfa" />
+      <stop offset="100%" stop-color="#e0f2fe" />
+    </linearGradient>
+
+    <linearGradient id="teal-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#0d9488" />
+    </linearGradient>
+
+    <linearGradient id="cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+
+    <linearGradient id="glass-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#e0f2fe" stop-opacity="0.15" />
+    </linearGradient>
+  </defs>
+
+  <!-- Ground Ambient Glow (Teal/Blue Theme) -->
+  <circle cx="256" cy="256" r="210" fill="url(#portal-blue-glow)" />
+
+  <!-- Isometric Base Grid Floor Lines -->
+  <g stroke="#0ea5e9" stroke-opacity="0.15" stroke-width="1.5">
+    <path d="M 96 256 L 256 120 L 416 256 L 256 392 Z" />
+    <path d="M 50 256 L 256 80 L 462 256 L 256 432 Z" fill="none" />
+    <path d="M 136 256 L 256 150 L 376 256 L 256 362 Z" />
+    <path d="M 256 80 L 256 432" stroke-dasharray="4 4" />
+    <path d="M 50 256 L 462 256" stroke-dasharray="4 4" />
+  </g>
+
+  <!-- MAIN ISOMETRIC SCENE BLOCK -->
+  <g transform="translate(256, 270)">
+    
+    <!-- Shadow for 3D Tablet and Equipment -->
+    <ellipse cx="0" cy="80" rx="150" ry="42" fill="#0f172a" fill-opacity="0.1" filter="blur(16px)" />
+    
+    <!-- ================= 1. ISOMETRIC OPERATIONAL TABLET ================= -->
+    <g transform="translate(15, -30)" filter="url(#tablet-shadow)">
+      <!-- Right side depth edge (3D Extrusion) -->
+      <path d="M 74 -110 L 80 -104 L 80 146 L 74 140 Z" fill="#1e293b" />
+      <!-- Bottom side depth edge (3D Extrusion) -->
+      <path d="M -20 190 L 80 146 L 74 140 L -26 184 Z" fill="#0f172a" />
+      
+      <!-- Tablet Frame Base -->
+      <path d="M -26 184 L 74 140 L 10 -120 L -90 -76 Z" fill="url(#tablet-body)" />
+      <!-- Tablet Top Front Screen Surface -->
+      <path d="M -22 174 L 70 134 L 6 -112 L -86 -72 Z" fill="url(#tablet-body)" />
+      
+      <!-- Actual High-Def Monitor Display -->
+      <path d="M -18 166 L 66 128 L 2 -104 L -82 -66 Z" fill="url(#tablet-screen)" />
+      
+      <!-- Operational SaaS Dashboard UI elements inside tablet screen -->
+      <path d="M -72 -24 L 2 -55 L 50 -35 L -24 -4 Z" fill="url(#teal-gradient)" /> <!-- Major Analytics Area -->
+      
+      <!-- Visual Graphs & Ring Charts inside screen -->
+      <!-- Ring 1 (Inventory levels) -->
+      <ellipse cx="-10" cy="50" rx="24" ry="12" fill="none" stroke="#94a3b8" stroke-width="4" stroke-opacity="0.4" />
+      <path d="M -34 50 A 24 12 0 0 1 14 50" fill="none" stroke="url(#cyan-gradient)" stroke-width="4" stroke-linecap="round" />
+      
+      <!-- Bar charts representation -->
+      <path d="M 12 10 L 22 6 L 22 36 L 12 40 Z" fill="url(#teal-gradient)" />
+      <path d="M 28 3 L 38 -1 L 38 29 L 28 33 Z" fill="url(#cyan-gradient)" />
+      <path d="M 44 -4 L 54 -8 L 54 22 L 44 26 Z" fill="#0284c7" />
+    </g>
+
+    <!-- ================= 2. ISOMETRIC SURPLUS FOOD TRAY (GLASS-METAL) ================= -->
+    <g transform="translate(-75, 25)">
+      <!-- Tray Shadow -->
+      <ellipse cx="0" cy="50" rx="42" ry="16" fill="#1e293b" fill-opacity="0.15" filter="blur(6px)" />
+      
+      <!-- Shiny light source background -->
+      <circle cx="0" cy="10" r="40" fill="url(#cyan-gradient)" fill-opacity="0.1" filter="url(#kitchen-glow)" />
+
+      <!-- Isometric Metallic/Glass bakery tray -->
+      <!-- Support posts (3D lines) -->
+      <line x1="-35" y1="20" x2="-35" y2="35" stroke="#94a3b8" stroke-width="3" />
+      <line x1="35" y1="20" x2="35" y2="35" stroke="#64748b" stroke-width="3" />
+      <line x1="0" y1="36" x2="0" y2="51" stroke="#64748b" stroke-width="3" />
+
+      <!-- Flat Rectangular Tray Surface (Translucent Glassmorphism) -->
+      <path d="M -40 20 L 0 36 L 40 20 L 0 4 Z" fill="url(#glass-blue)" stroke="#ffffff" stroke-width="1.5" />
+      <!-- Rim Accent -->
+      <path d="M -40 20 L 0 36 L 40 20 L 40 22 L 0 38 L -40 22 Z" fill="url(#teal-gradient)" />
+
+      <!-- 3D Gourmet Bakery items and Trays resting on top -->
+      <!-- Left Cake Item -->
+      <path d="M -20 12 L -8 17 L 4 12 L -8 7 Z" fill="#f59e0b" />
+      <path d="M -20 12 L -8 17 L -8 24 L -20 19 Z" fill="#d97706" />
+      <!-- Glowing fresh particle dot -->
+      <circle cx="-8" cy="4" r="2.5" fill="#10b981" />
+
+      <!-- Right Pastry Item -->
+      <path d="M 2 4 L 14 9 L 26 4 L 14 -1 Z" fill="#fb923c" />
+      <path d="M 2 4 L 14 9 L 14 15 L 2 10 Z" fill="#ea580c" />
+    </g>
+
+    <!-- ================= 3. FLOATING SYNC CHECKMARK INDICATOR ================= -->
+    <g transform="translate(-45, -75)" filter="url(#icon-shadow)">
+      <!-- Translucent Glowing Disk -->
+      <ellipse cx="0" cy="0" rx="32" ry="16" fill="url(#glass-blue)" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" />
+      <!-- Inner Ring -->
+      <ellipse cx="0" cy="0" rx="24" ry="12" fill="none" stroke="url(#cyan-gradient)" stroke-width="2" />
+      
+      <!-- 3D Checkmark inside ring -->
+      <path d="M -8 -1 L -2 4 L 10 -6" fill="none" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <!-- ================= 4. FLOATING 3D ANALYTICS CLOUD ICON ================= -->
+    <g transform="translate(10, -145)" filter="url(#icon-shadow)">
+      <!-- Cloud Body isometric shape -->
+      <path d="M -15 10 L 5 18 L 25 10 L 25 0 A 10 10 0 0 0 15 -8 A 12 12 0 0 0 -5 -8 A 10 10 0 0 0 -15 0 Z" fill="url(#teal-gradient)" />
+      <!-- Cloud Front face highlighting -->
+      <path d="M -15 10 L 5 18 L 25 10 L 25 3 Q 15 -4 -5 -4 Z" fill="url(#cyan-gradient)" fill-opacity="0.4" />
+      <!-- Sync Arrow on Cloud -->
+      <path d="M 1 2 L 6 7 L 11 2" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" />
+      <line x1="6" y1="7" x2="6" y2="-4" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" />
+    </g>
+
+    <!-- Tech sparkles & data points -->
+    <circle cx="-100" cy="40" r="4.5" fill="#22d3ee" opacity="0.8" />
+    <circle cx="110" cy="-20" r="3.5" fill="#0d9488" opacity="0.75" />
+    <circle cx="-40" cy="-130" r="4" fill="#e0f2fe" opacity="0.9" />
+    <circle cx="70" cy="65" r="5" fill="#0ea5e9" opacity="0.6" />
+  </g>
+</svg>

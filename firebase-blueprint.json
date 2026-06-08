@@ -1,0 +1,128 @@
+{
+  "entities": {
+    "foodListing": {
+      "title": "Food Listing",
+      "description": "Represents active surplus portion listings available for rescue",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "restaurantName": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "originalPrice": { "type": "number" },
+        "rescuePrice": { "type": "number" },
+        "savings": { "type": "number" },
+        "quantity": { "type": "number" },
+        "pickupDeadline": { "type": "string" },
+        "distance": { "type": "number" },
+        "image": { "type": "string" },
+        "rating": { "type": "number" },
+        "co2Saved": { "type": "number" },
+        "waterSaved": { "type": "number" },
+        "aiDemandTrend": { "type": "string", "enum": ["High", "Moderate", "Low"] },
+        "status": { "type": "string", "enum": ["available", "claimed", "expired"] },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "paymentId": { "type": "string" }
+      },
+      "required": ["id", "restaurantName", "name", "category", "originalPrice", "rescuePrice", "savings", "quantity", "pickupDeadline", "distance", "image", "rating", "co2Saved", "waterSaved", "aiDemandTrend", "status", "lat", "lng", "paymentId"]
+    },
+    "order": {
+      "title": "Order",
+      "description": "Represents a food rescue order reservation claim",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "listingId": { "type": "string" },
+        "foodName": { "type": "string" },
+        "restaurantName": { "type": "string" },
+        "price": { "type": "number" },
+        "quantity": { "type": "number" },
+        "pickupDeadline": { "type": "string" },
+        "status": { "type": "string", "enum": ["Reserved", "Picked Up"] },
+        "qrCodeValue": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "fulfillmentMethod": { "type": "string" },
+        "deliveryFee": { "type": "number" },
+        "packingFee": { "type": "number" },
+        "taxes": { "type": "number" },
+        "totalPaid": { "type": "number" },
+        "deliveryAddress": { "type": "string" },
+        "distance": { "type": "number" },
+        "paymentRef": { "type": "string" },
+        "paymentVerified": { "type": "boolean" }
+      },
+      "required": ["id", "listingId", "foodName", "restaurantName", "price", "quantity", "pickupDeadline", "status", "qrCodeValue", "timestamp", "paymentMethod", "fulfillmentMethod", "deliveryFee", "packingFee", "taxes", "totalPaid", "distance", "paymentRef", "paymentVerified"]
+    },
+    "notification": {
+      "title": "Notification",
+      "description": "Operation dynamic alert messages logged to users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["success", "info", "alert", "warning"] },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "title", "message", "type", "timestamp"]
+    },
+    "globalStats": {
+      "title": "Global Stats",
+      "description": "Aggregated tracker metrics for sustainability stats ledgers",
+      "type": "object",
+      "properties": {
+        "mealsSaved": { "type": "number" },
+        "co2Saved": { "type": "number" },
+        "waterSaved": { "type": "number" },
+        "moneyRecovered": { "type": "number" }
+      },
+      "required": ["mealsSaved", "co2Saved", "waterSaved", "moneyRecovered"]
+    },
+    "kitchen": {
+      "title": "Kitchen",
+      "description": "Registered partner kitchen entities",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "rating": { "type": "number" },
+        "ordersPlaced": { "type": "number" },
+        "registrationDate": { "type": "string" },
+        "fssai": { "type": "string" },
+        "gstin": { "type": "string" },
+        "businessHours": { "type": "string" },
+        "image": { "type": "string" },
+        "approved": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "rejectionReason": { "type": "string" },
+        "gmail": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "address", "rating", "ordersPlaced", "registrationDate", "fssai", "gstin", "businessHours", "image", "approved", "gmail"]
+    }
+  },
+  "firestore": {
+    "listings/{listingId}": {
+      "schema": "#/entities/foodListing",
+      "description": "Saves all surplus portions registered for rescue"
+    },
+    "orders/{orderId}": {
+      "schema": "#/entities/order",
+      "description": "Records all claimed dynamic rescue orders secure"
+    },
+    "notifications/{notifId}": {
+      "schema": "#/entities/notification",
+      "description": "Logs all audit, success, and system alerts dynamically"
+    },
+    "stats/{statId}": {
+      "schema": "#/entities/globalStats",
+      "description": "Stores current running metrics for cumulative food and co2 saved figures"
+    },
+    "kitchens/{kitchenId}": {
+      "schema": "#/entities/kitchen",
+      "description": "Preserves merchant status and compliance data"
+    }
+  }
+}

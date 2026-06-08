@@ -1,0 +1,8 @@
+{
+  "name": "bacha kulcha",
+  "description": "Minimalist premium food rescue and daily utility delivery app, designed with a high-end editorial digital menu experience to connect food surplus with discerning consumers.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
