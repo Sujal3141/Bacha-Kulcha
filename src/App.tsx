@@ -682,7 +682,9 @@ export default function App() {
   useEffect(() => {
     const handleOAuthMessage = (event: MessageEvent) => {
       const origin = event.origin;
-      if (!origin.endsWith('.run.app') && !origin.includes('localhost') && !origin.includes('0.0.0.0')) {
+      const expectedOrigin = window.location.origin;
+      if (origin !== expectedOrigin && !origin.endsWith('.run.app') && !origin.includes('localhost') && !origin.includes('0.0.0.0')) {
+        console.warn('OAuth message rejected due to origin mismatch:', origin);
         return;
       }
       if (event.data?.type === 'OAUTH_AUTH_SUCCESS' && event.data?.user) {
