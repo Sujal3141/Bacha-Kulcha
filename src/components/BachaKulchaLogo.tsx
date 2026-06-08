@@ -1,5 +1,5 @@
 import React from "react";
-import logoImg from "../../assets/logo.png";
+const logoImg = "/assets/logo.png";
 
 interface BachaKulchaLogoProps {
   className?: string;

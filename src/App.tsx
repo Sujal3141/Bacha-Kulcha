@@ -34,7 +34,7 @@ import { SellerPortal } from "./components/SellerPortal";
 import { AdminPortal } from "./components/AdminPortal";
 import { SustainabilityPortal } from "./components/SustainabilityPortal";
 import { DevOpsPortal } from "./components/DevOpsPortal";
-import logoImg from "../assets/logo.png";
+const logoImg = "/assets/logo.png";
 import CustomerRescueVisual from "./components/CustomerRescueVisual";
 import PartnerKitchenVisual from "./components/PartnerKitchenVisual";
 import AdminSuiteVisual from "./components/AdminSuiteVisual";

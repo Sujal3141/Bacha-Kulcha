@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { FoodListing, Order } from "../types";
 import { motion, AnimatePresence } from "motion/react";
-import logoImg from "../../assets/logo.png";
+const logoImg = "/assets/logo.png";
 
 interface CustomerPortalProps {
   listings: FoodListing[];
