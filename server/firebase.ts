@@ -18,10 +18,13 @@ import path from "path";
 const configPath = path.join(process.cwd(), "firebase-applet-config.json");
 let firebaseConfig: any = {};
 try {
-  if (fs.existsSync(configPath)) {
+  if (process.env.FIREBASE_CONFIG_JSON) {
+    firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG_JSON);
+    console.log("🔥 Loaded Firebase config from environment variables.");
+  } else if (fs.existsSync(configPath)) {
     firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
   } else {
-    console.warn("⚠️ firebase-applet-config.json not found at workspace root. Falling back to empty config.");
+    console.warn("⚠️ firebase-applet-config.json not found at workspace root and FIREBASE_CONFIG_JSON env var is missing. Falling back to empty config.");
   }
 } catch (err) {
   console.error("❌ Error parsing firebase-applet-config.json:", err);
