@@ -296,6 +296,9 @@ export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sel
     .sort((a, b) => {
       if (a.status === "available" && b.status !== "available") return -1;
       if (a.status !== "available" && b.status === "available") return 1;
+      if (a.status === "available" && b.status === "available") {
+        return new Date(a.pickupDeadline).getTime() - new Date(b.pickupDeadline).getTime();
+      }
       return 0;
     });
   const sellerOrders = orders.filter(o => o.restaurantName === restaurantName && o.status !== "Cancelled");
