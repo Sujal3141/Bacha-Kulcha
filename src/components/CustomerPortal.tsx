@@ -1015,24 +1015,11 @@ export function CustomerPortal({ listings, onOrderCreated, orders }: CustomerPor
                               </div>
                             </div>
 
-                            {/* Direct SSL payment broker choice */}
+                            {/* Payment Method Details */}
                             <div className="space-y-2">
-                              <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono block">Simulation SSL Gateway</span>
-                              <div className="grid grid-cols-3 gap-2">
-                                {(["UPI", "Stripe", "Razorpay"] as const).map(gw => (
-                                  <button
-                                    key={gw}
-                                    type="button"
-                                    onClick={() => setPaymentBroker(gw)}
-                                    className={`py-1.5 rounded-lg text-[9.5px] font-mono font-semibold text-center border active:scale-95 transition-all cursor-pointer ${
-                                      paymentBroker === gw
-                                        ? "border-[#e23744] bg-[#e23744]/10 text-[#e23744]"
-                                        : "border-slate-250 text-slate-400 hover:text-slate-650"
-                                    }`}
-                                  >
-                                    {gw}
-                                  </button>
-                                ))}
+                              <span className="text-[9px] uppercase tracking-wider text-slate-400 font-mono block">Payment Details</span>
+                              <div className="bg-slate-50 border border-slate-150 rounded-xl p-3 text-center">
+                                <span className="text-xs text-slate-600 font-semibold">Payment is made on the spot upon pickup.</span>
                               </div>
                             </div>
 

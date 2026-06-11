@@ -291,7 +291,13 @@ export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sel
     }
   };
 
-  const sellerSpecificListings = listings.filter(l => l.restaurantName === restaurantName);
+  const sellerSpecificListings = [...listings]
+    .filter(l => l.restaurantName === restaurantName)
+    .sort((a, b) => {
+      if (a.status === "available" && b.status !== "available") return -1;
+      if (a.status !== "available" && b.status === "available") return 1;
+      return 0;
+    });
   const sellerOrders = orders.filter(o => o.restaurantName === restaurantName && o.status !== "Cancelled");
 
   return (
@@ -587,69 +593,23 @@ export function SellerPortal({ onListingAdded, listings, onTriggerAutoPrice, sel
         </div>
       </div>
 
-      {/* Dynamic Pricing AI playground slider & active branch metrics - 5 cols */}
+      {/* Dynamic Pricing AI active branch metrics */}
       <div className="lg:col-span-5 flex flex-col gap-6">
-        
-        {/* Sliders Simulator box */}
-        <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-3xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.03)] p-6 hover:shadow-[0_20px_48px_-10px_rgba(0,0,0,0.04)] transition-all duration-400">
-          <h3 className="font-sans font-extrabold text-sm text-gray-800 flex items-center gap-1.5 mb-4">
-            <Sliders size={18} className="text-[#e23744]" />
-            Shelf-life Pricing Playground
-          </h3>
-
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-xs font-semibold text-stone-700 mb-1 font-sans">
-                <span>Shelf-life Countdown (Hours Left):</span>
-                <span className="font-mono text-[#e23744] font-bold">{hoursToExpirySlider} hrs left</span>
-              </div>
-              <input
-                type="range"
-                min="0.5"
-                max="12"
-                step="0.5"
-                value={hoursToExpirySlider}
-                onChange={(e) => setHoursToExpirySlider(Number(e.target.value))}
-                className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-650"
-              />
-            </div>
-
-            {/* Generated Price Logic Demonstration */}
-            <div className="bg-gray-50 border border-gray-150 rounded-xl p-4 font-mono text-xs text-gray-700 space-y-2">
-              <div className="font-bold underline text-slate-800 pb-1 flex justify-between">
-                <span>AI recommendation logic</span>
-                <span className="text-emerald-600 uppercase tracking-widest text-[9px]">Simulation</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Subtotal Price:</span>
-                <span>₹{originalPrice ? originalPrice : 300}</span>
-              </div>
-              <div className="flex justify-between font-bold text-slate-900">
-                <span>Dynamic Discount:</span>
-                <span className="text-emerald-600">-{currentSimulation.discountPercent}%</span>
-              </div>
-              <div className="flex justify-between font-bold border-t pt-2 text-sm text-[#e23744]">
-                <span>Automated Rescue suggestion:</span>
-                <span>₹{currentSimulation.price}</span>
-              </div>
-            </div>
-
-            <button
-              onClick={onTriggerAutoPrice}
-              className="w-full border border-[#e23744] hover:bg-[#e23744] hover:text-white text-[#e23744] font-sans text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-              id="optimize-all-listings-ai"
-            >
-              <Sparkles size={14} />
-              Re-calculate Live Listings (Hourly Drop)
-            </button>
-          </div>
-        </div>
-
         {/* Current Active outlet metrics */}
         <div className="bg-white/80 backdrop-blur-xl border border-slate-200/50 rounded-3xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.03)] p-5 hover:shadow-[0_20px_48px_-10px_rgba(0,0,0,0.04)] transition-all duration-400 font-sans">
-          <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-gray-400 mb-3">
-            Active Surplus Deals From {restaurantName}
-          </h3>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-gray-400">
+              Active Surplus Deals From {restaurantName}
+            </h3>
+            <button
+              onClick={onTriggerAutoPrice}
+              className="border border-[#e23744] hover:bg-[#e23744] hover:text-white text-[#e23744] font-sans text-[10px] font-bold px-2 py-1 rounded transition-all flex items-center justify-center gap-1 cursor-pointer"
+              title="Re-calculate Live Listings (Hourly Drop)"
+            >
+              <Sparkles size={12} />
+              Auto-Drop Price
+            </button>
+          </div>
 
           {sellerSpecificListings.length === 0 ? (
             <p className="text-xs text-gray-400 font-sans py-4">No active listings currently out for rescue in this kitchen.</p>
